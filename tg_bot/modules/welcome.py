@@ -80,6 +80,12 @@ def send(update, message, keyboard, backup_message):
 def new_member(bot: Bot, update: Update):
     chat = update.effective_chat  # type: Optional[Chat]
 
+    prev_welc = sql.get_clean_pref(chat.id)
+    if prev_welc:
+        # Delete the service message as well
+        update.effective_message.delete()
+
+
     should_welc, cust_welcome, welc_type = sql.get_welc_pref(chat.id)
     if should_welc:
         sent = None
@@ -125,18 +131,14 @@ def new_member(bot: Bot, update: Update):
                 sent = send(update, res, keyboard,
                             sql.DEFAULT_WELCOME.format(first=first_name))  # type: Optional[Message]
 
-        prev_welc = sql.get_clean_pref(chat.id)
         if prev_welc:
             try:
                  bot.delete_message(chat.id, prev_welc)
-                 # try deleting the service message as well
-                 bot.delete_message(chat.id, update.message.message_id)
             except BadRequest as excp:
                 pass
 
             if sent:
                 sql.set_clean_welcome(chat.id, sent.message_id)
-
 
 @run_async
 def left_member(bot: Bot, update: Update):
