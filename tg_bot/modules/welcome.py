@@ -85,13 +85,8 @@ def new_member(bot: Bot, update: Update):
         sent = None
         new_members = update.effective_message.new_chat_members
         for new_mem in new_members:
-            # Give the owner a special welcome
-            if new_mem.id == OWNER_ID:
-                update.effective_message.reply_text("Master is in the houseeee, let's get this party started!")
-                continue
-
             # Don't welcome yourself
-            elif new_mem.id == bot.id:
+            if new_mem.id == bot.id:
                 continue
 
             else:
@@ -133,7 +128,9 @@ def new_member(bot: Bot, update: Update):
         prev_welc = sql.get_clean_pref(chat.id)
         if prev_welc:
             try:
-                bot.delete_message(chat.id, prev_welc)
+                 bot.delete_message(chat.id, prev_welc)
+                 # try deleting the service message as well
+                 bot.delete_message(chat.id, update.message.message_id)
             except BadRequest as excp:
                 pass
 
@@ -150,11 +147,6 @@ def left_member(bot: Bot, update: Update):
         if left_mem:
             # Ignore bot being kicked
             if left_mem.id == bot.id:
-                return
-
-            # Give the owner a special goodbye
-            if left_mem.id == OWNER_ID:
-                update.effective_message.reply_text("RIP Master")
                 return
 
             # if media goodbye, use appropriate function for it
@@ -463,7 +455,7 @@ __help__ = """
  - /setgoodbye <sometext>: set a custom goodbye message. If used replying to media, uses that media.
  - /resetwelcome: reset to the default welcome message.
  - /resetgoodbye: reset to the default goodbye message.
- - /cleanwelcome <on/off>: On new member, try to delete the previous welcome message to avoid spamming the chat.
+ - /cleanwelcome <on/off>: Delete welcome service message and old welcome message
 
  - /welcomehelp: view more formatting information for custom welcome/goodbye messages.
 """.format(WELC_HELP_TXT)
